@@ -14,5 +14,10 @@ spacy==3.7.5
 pyvis==0.3.2
 cymem==2.0.7
 murmurhash==1.0.9
+scikit-learn
+datasets
+huggingface_hub==0.24.5
+evaluate==0.4.3
+python-dotenv==1.0.1
 
 
