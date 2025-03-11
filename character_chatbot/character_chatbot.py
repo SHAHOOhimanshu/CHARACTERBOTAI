@@ -169,7 +169,6 @@ class CharacterChatBot():
                                                           return_dict=True,
                                                           quantization_config=bnb_config,
                                                           torch_dtype = torch.float16,
-                                                          device_map = self.device
                                                           )
         
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
