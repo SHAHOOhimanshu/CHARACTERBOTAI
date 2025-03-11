@@ -168,7 +168,7 @@ class CharacterChatBot():
         base_model = AutoModelForCausalLM.from_pretrained(base_model_name_or_path,
                                                           return_dict=True,
                                                           quantization_config=bnb_config,
-                                                          torch_dtype = torch.float16,
+                                                          torch_dtype = torch.float16
                                                           )
         
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
