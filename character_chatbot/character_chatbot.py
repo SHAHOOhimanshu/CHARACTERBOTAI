@@ -97,7 +97,7 @@ class CharacterChatBot():
               max_grad_norm = 0.3,
               max_steps = 300,
               warmup_ratio = 0.3,
-              lr_scheduler_type = "constant",
+              lr_scheduler_type = "constant"
               ):
         
         bnb_config = BitsAndBytesConfig(
@@ -130,20 +130,20 @@ class CharacterChatBot():
         )
 
         training_arguments = SFTConfig(
-        output_dir=output_dir,
-        per_device_train_batch_size = per_device_train_batch_size,
-        gradient_accumulation_steps = gradient_accumulation_steps,
-        optim = optim,
-        save_steps = save_steps,
-        logging_steps = logging_steps,
-        learning_rate = learning_rate,
-        fp16= True,
-        max_grad_norm = max_grad_norm,
-        max_steps = max_steps,
-        warmup_ratio = warmup_ratio,
-        group_by_length = True,
-        lr_scheduler_type = lr_scheduler_type,
-        report_to = "none"
+            output_dir=output_dir,
+            per_device_train_batch_size = per_device_train_batch_size,
+            gradient_accumulation_steps = gradient_accumulation_steps,
+            optim = optim,
+            save_steps = save_steps,
+            logging_steps = logging_steps,
+            learning_rate = learning_rate,
+            fp16= True,
+            max_grad_norm = max_grad_norm,
+            max_steps = max_steps,
+            warmup_ratio = warmup_ratio,
+            group_by_length = True,
+            lr_scheduler_type = lr_scheduler_type,
+            report_to = "none"
         )
 
         max_seq_len = 512
@@ -168,6 +168,10 @@ class CharacterChatBot():
         del trainer, model
         gc.collect()
 
+        # Monkey-patch accelerate to bypass .to() calls during model dispatch
+        import accelerate
+        accelerate.big_modeling.dispatch_model = lambda model, **kwargs: model
+        
         base_model = AutoModelForCausalLM.from_pretrained(base_model_name_or_path,
                                                           return_dict=True,
                                                           quantization_config=bnb_config,
@@ -176,7 +180,7 @@ class CharacterChatBot():
  
         # Monkey-patch .to() on the reloaded model as well
         base_model.to = lambda *args, **kwargs: base_model
-                
+
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
 
         model = PeftModel.from_pretrained(base_model,"final_ckpt")
