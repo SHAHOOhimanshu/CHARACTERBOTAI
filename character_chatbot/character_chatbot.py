@@ -109,6 +109,9 @@ class CharacterChatBot():
         model = AutoModelForCausalLM.from_pretrained(base_model_name_or_path, 
                                                      quantization_config= bnb_config,
                                                      trust_remote_code=True)
+        # Monkey-patch .to() so that any internal calls do not try to move the model
+        model.to = lambda *args, **kwargs: model
+
         model.config.use_cache = False
 
         toknizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
@@ -170,7 +173,10 @@ class CharacterChatBot():
                                                           quantization_config=bnb_config,
                                                           torch_dtype = torch.float16
                                                           )
-        
+ 
+        # Monkey-patch .to() on the reloaded model as well
+        base_model.to = lambda *args, **kwargs: base_model
+                
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
 
         model = PeftModel.from_pretrained(base_model,"final_ckpt")
