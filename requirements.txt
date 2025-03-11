@@ -19,5 +19,7 @@ datasets
 huggingface_hub==0.24.5
 evaluate==0.4.3
 python-dotenv==1.0.1
-
+git+https://github.com/huggingface/peft.git
+trl==0.9.6
+bitsandbytes==0.43.3
 
