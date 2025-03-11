@@ -13,7 +13,8 @@ from peft import LoraConfig, PeftModel
 from trl import SFTConfig, SFTTrainer
 import gc
 
-
+def remove_paranthesis(text):
+    return re.sub(r'\([^)]*\)', '', text)
 
 
 class CharacterChatBot():
