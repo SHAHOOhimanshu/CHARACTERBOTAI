@@ -2,8 +2,6 @@
 import accelerate
 accelerate.big_modeling.dispatch_model = lambda model, **kwargs: model
 
-import transformers
-transformers.modeling_utils.PreTrainedModel.to = lambda self, *args, **kwargs: self
 
 import pandas as pd
 import torch
@@ -86,6 +84,7 @@ class CharacterChatBot():
                                          model=model_path,
                                          model_kwargs={"torch_dtype": torch.float16,
                                                        "quantization_config": bnb_config,
+                                                       "device_map": "auto"
                                                        }
                                          )
         return pipeline
@@ -105,8 +104,7 @@ class CharacterChatBot():
               warmup_ratio=0.3,
               lr_scheduler_type="constant"):
 
-        # (Optional: these lines are now redundant with the global patch,
-        # but keeping them here provides extra protection if the global patch is missing.)
+
         import accelerate
         accelerate.big_modeling.dispatch_model = lambda model, **kwargs: model
 
@@ -118,10 +116,9 @@ class CharacterChatBot():
 
         model = AutoModelForCausalLM.from_pretrained(base_model_name_or_path, 
                                                      quantization_config=bnb_config,
-                                                     trust_remote_code=True)
-        # Monkey-patch .to() so that any internal calls do not try to move the model
-        model.to = lambda *args, **kwargs: model
-
+                                                     trust_remote_code=True,
+                                                     device_map="auto")
+       
         model.config.use_cache = False
 
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
@@ -185,10 +182,10 @@ class CharacterChatBot():
         base_model = AutoModelForCausalLM.from_pretrained(base_model_name_or_path,
                                                           return_dict=True,
                                                           quantization_config=bnb_config,
-                                                          torch_dtype=torch.float16)
+                                                          torch_dtype=torch.float16,
+                                                          device_map="auto")
  
-        base_model.to = lambda *args, **kwargs: base_model
-
+       
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
 
         model = PeftModel.from_pretrained(base_model, "final_ckpt")
