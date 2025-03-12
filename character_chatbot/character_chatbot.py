@@ -99,7 +99,10 @@ class CharacterChatBot():
               warmup_ratio = 0.3,
               lr_scheduler_type = "constant"
               ):
-        
+
+        import accelerate
+        accelerate.big_modeling.dispatch_model = lambda model, **kwargs: model
+
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
