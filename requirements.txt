@@ -1,3 +1,28 @@
+# beautifulsoup4==4.12.3
+# scrapy==2.11.2
+# nltk==3.8.1
+# torch
+# pandas
+# numpy
+# gradio==4.36.1
+# matplotlib
+# seaborn
+# transformers==4.44.0
+# pydantic==2.4.2
+# fastapi==0.110
+# spacy==3.7.5
+# pyvis==0.3.2
+# cymem==2.0.7
+# murmurhash==1.0.9
+# scikit-learn
+# datasets
+# huggingface_hub>=0.25.0
+# evaluate==0.4.3
+# python-dotenv==1.0.1
+# peft==0.3.0
+# trl==0.9.6
+# bitsandbytes==0.43.3
+
 beautifulsoup4==4.12.3
 scrapy==2.11.2
 nltk==3.8.1
@@ -7,7 +32,7 @@ numpy
 gradio==4.36.1
 matplotlib
 seaborn
-transformers==4.44.0
+transformers==4.18.0
 pydantic==2.4.2
 fastapi==0.110
 spacy==3.7.5
@@ -16,10 +41,9 @@ cymem==2.0.7
 murmurhash==1.0.9
 scikit-learn
 datasets
-huggingface_hub==0.24.5
+huggingface_hub>=0.25.0  # or pin a specific version that works with these dependencies
 evaluate==0.4.3
 python-dotenv==1.0.1
-git+https://github.com/huggingface/peft.git@v0.3.0
-trl==0.9.6
+peft==0.3.0
+trl==0.2.1
 bitsandbytes==0.43.3
-
