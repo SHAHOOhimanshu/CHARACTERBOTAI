@@ -32,7 +32,7 @@ numpy
 gradio==4.36.1
 matplotlib
 seaborn
-transformers==4.18.0
+transformers==4.46.0
 pydantic==2.4.2
 fastapi==0.110
 spacy==3.7.5
