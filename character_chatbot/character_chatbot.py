@@ -210,7 +210,6 @@
 
 #         return dataset
 
-
 import pandas as pd
 import torch
 import re
@@ -337,10 +336,13 @@ class CharacterChatBot():
             bias="none",
             task_type="CAUSAL_LM"
         )
-        # (Optionally wrap model with PEFT – adjust if you want to train with LoRA)
-        # model = get_peft_model(model, peft_config)
+        
+        # Attach trainable adapters to the quantized model
+        from peft import prepare_model_for_kbit_training, get_peft_model
+        model = prepare_model_for_kbit_training(model)
+        model = get_peft_model(model, peft_config)
 
-        # Use standard Hugging Face Trainer for supervised fine-tuning
+        # Use standard Hugging Face Trainer for fine-tuning
         training_args = TrainingArguments(
             output_dir=output_dir,
             per_device_train_batch_size=per_device_train_batch_size,
@@ -352,14 +354,15 @@ class CharacterChatBot():
             save_steps=save_steps,
             fp16=True,
             optim=optim,
-            report_to="none"
+            report_to="none",
+            remove_unused_columns=False  # Prevent removal of extra columns
         )
 
         trainer = Trainer(
             model=model,
             args=training_args,
             train_dataset=dataset,
-            tokenizer=tokenizer
+            tokenizer=tokenizer  # Future: use `processing_class` instead
         )
 
         trainer.train()
@@ -382,7 +385,7 @@ class CharacterChatBot():
         )
         tokenizer = AutoTokenizer.from_pretrained(base_model_name_or_path)
 
-        # Load the fine-tuned model with PEFT (if applicable)
+        # Load the fine-tuned model with PEFT adapters
         model = PeftModel.from_pretrained(base_model, "final_ckpt")
         model.push_to_hub(self.model_path)
         tokenizer.push_to_hub(self.model_path)
@@ -391,6 +394,7 @@ class CharacterChatBot():
         gc.collect()
 
     def load_data(self):
+        # Load and clean the CSV
         naruto_transcript_df = pd.read_csv(self.data_path)
         naruto_transcript_df = naruto_transcript_df.dropna()
         naruto_transcript_df['line'] = naruto_transcript_df['line'].apply(remove_paranthesis)
@@ -414,7 +418,27 @@ class CharacterChatBot():
             prompt += naruto_transcript_df.iloc[ind]['line']
             prompts.append(prompt)
         
+        # Create a DataFrame with the prompts
         df = pd.DataFrame({"prompt": prompts})
         dataset = Dataset.from_pandas(df)
-        return dataset
         
+        # Load the tokenizer from the base model path
+        tokenizer = AutoTokenizer.from_pretrained(self.base_model_path)
+        # Ensure that the tokenizer has a pad token; if not, set it to the EOS token or add one.
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        
+        # Define a tokenize function that applies truncation, padding, and adds labels
+        def tokenize_function(examples):
+            tokenized = tokenizer(examples["prompt"], truncation=True, padding=True, max_length=512)
+            # For causal language modeling, use input_ids as labels
+            tokenized["labels"] = tokenized["input_ids"].copy()
+            return tokenized
+        
+        # Map the tokenize function over the dataset in batches, and remove the original "prompt" column
+        tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["prompt"])
+        
+        return tokenized_dataset
+
+
+
